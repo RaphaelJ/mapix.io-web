@@ -1,46 +1,37 @@
 module Foundation where
 
-import Prelude
+import Import.NoFoundation
+import Database.Persist.Sql (ConnectionPool, runSqlPool)
+import Text.Hamlet          (hamletFile)
+import Text.Jasmine         (minifym)
+import Yesod.Default.Util   (addStaticContentExternal)
+import Yesod.Core.Types     (Logger)
 
-import Yesod
-import Yesod.Static
-import Yesod.Default.Config
-import Yesod.Default.Util (addStaticContentExternal)
-import Network.HTTP.Client.Conduit (Manager, HasHttpManager (getHttpManager))
-import qualified Database.Persist
-import Database.Persist.Sql (SqlBackend)
-import Text.Jasmine (minifym)
-import Text.Hamlet (hamletFile)
-import Yesod.Core.Types (Logger)
+import qualified Yesod.Core.Unsafe as Unsafe
 
 import API (HasAPIConfig (..))
-import qualified Settings
-import Settings (widgetFile, Extra (..))
-import Settings.Development (development)
-import Settings.StaticFiles
 
 data App = App
-    { settings      :: AppConfig DefaultEnv Extra
-    , getStatic     :: Static -- ^ Settings for static file serving.
-    , connPool      :: Database.Persist.PersistConfigPool Settings.PersistConf
-    , httpManager   :: Manager
-    , persistConfig :: Settings.PersistConf
-    , appLogger     :: Logger
+    { appSettings       :: AppSettings
+    , appStatic         :: Static -- ^ Settings for static file serving.
+    , appConnPool       :: ConnectionPool
+    , appHttpManager    :: Manager
+    , appLogger         :: Logger
     }
 
 instance HasHttpManager App where
-    getHttpManager = httpManager
+    getHttpManager = appHttpManager
 
 instance HasAPIConfig App where
-    getApiRoot = getApiRoot . appExtra . settings
-    getApiKey  = getApiKey  . appExtra . settings
+    getApiRoot = appApiRoot . appSettings
+    getApiKey  = appApiKey  . appSettings
 
 mkYesodData "App" $(parseRoutesFile "config/routes")
 
 type Form x = Html -> MForm (HandlerT App IO) (FormResult x, Widget)
 
 instance Yesod App where
-    approot = ApprootMaster $ appRoot . settings
+    approot = ApprootMaster $ appRoot . appSettings
 
     defaultLayout widget = do
         mmsg <- getMessage
@@ -68,42 +59,50 @@ instance Yesod App where
             $(widgetFile "default-layout")
         withUrlRenderer $(hamletFile "templates/default-layout-wrapper.hamlet")
 
-    urlRenderOverride y (StaticR s) =
-        Just $ uncurry (joinPath y (Settings.staticRoot $ settings y))
-                       (renderRoute s)
-    urlRenderOverride _ _ = Nothing
-
     -- This function creates static content files in the static folder
     -- and names them based on a hash of their content. This allows
     -- expiration dates to be set far in the future without worry of
     -- users receiving stale content.
-    addStaticContent =
-        addStaticContentExternal minifym genFileName Settings.staticDir 
-                                 (StaticR . flip StaticRoute [])
+    addStaticContent ext mime content = do
+        master <- getYesod
+        let staticDir = appStaticDir $ appSettings master
+        addStaticContentExternal
+            minifym
+            genFileName
+            staticDir
+            (StaticR . flip StaticRoute [])
+            ext
+            mime
+            content
       where
         -- Generate a unique filename based on the content itself
-        genFileName lbs
-            | development = "autogen-" ++ base64md5 lbs
-            | otherwise   = base64md5 lbs
+        genFileName lbs = "autogen-" ++ base64md5 lbs
 
-    -- Place Javascript at bottom of the body tag so the rest of the page loads first
+    -- Place Javascript at bottom of the body tag so the rest of the page loads
+    -- first
     jsLoader _ = BottomOfBody
 
-    shouldLog _ _source level =
-        development || level == LevelWarn || level == LevelError
+    -- What messages should be logged. The following includes all messages when
+    -- in development, and warnings and errors in production.
+    shouldLog app _source level =
+        appShouldLogAll (appSettings app)
+            || level == LevelWarn
+            || level == LevelError
 
     makeLogger = return . appLogger
 
 instance YesodPersist App where
     type YesodPersistBackend App = SqlBackend
-    runDB = defaultRunDB persistConfig connPool
+
+    runDB action = do
+        master <- getYesod
+        runSqlPool action $ appConnPool master
 
 instance YesodPersistRunner App where
-    getDBRunner = defaultGetDBRunner connPool
+    getDBRunner = defaultGetDBRunner appConnPool
 
 instance RenderMessage App FormMessage where
     renderMessage _ _ = defaultFormMessage
 
--- | Get the 'Extra' value, used to hold data from the settings.yml file.
-getExtra :: Handler Extra
-getExtra = fmap (appExtra . settings) getYesod
+unsafeHandler :: App -> Handler a -> IO a
+unsafeHandler = Unsafe.fakeHandlerGetLogger appLogger

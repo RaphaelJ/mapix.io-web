@@ -1,6 +1,4 @@
-/static                         StaticR                 Static getStatic
-
-/robots.txt                     RobotsR                 GET
+/static                         StaticR                 Static appStatic
 
 /                               HomeR                   GET
 

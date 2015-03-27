@@ -5,21 +5,149 @@
 -- declared in the Foundation.hs file.
 module Settings where
 
-import Prelude
+import ClassyPrelude.Yesod
+import Control.Exception           (throw)
+import Data.Aeson                  (Result (..), fromJSON, withObject, (.!=),
+                                    (.:?))
+import Data.FileEmbed              (embedFile)
+import Data.Yaml                   (decodeEither')
+import Database.Persist.Sqlite     (SqliteConf)
+import Language.Haskell.TH.Syntax  (Exp, Name, Q)
+import Network.Wai.Handler.Warp    (HostPreference)
+import Yesod.Default.Config2       (applyEnvValue, configSettingsYml)
+import Yesod.Default.Util          (WidgetFileSettings, widgetFileNoReload,
+                                    widgetFileReload)
 
-import Control.Applicative
-import Text.Shakespeare.Text (st)
-import Language.Haskell.TH.Syntax
-import Database.Persist.Sqlite (SqliteConf)
-import Yesod.Default.Config
-import Yesod.Default.Util
-import Data.ByteString (ByteString)
-import Data.Text (Text)
-import Data.Text.Encoding (encodeUtf8)
-import Data.Yaml
-import Settings.Development
-import Data.Default (def)
-import Text.Hamlet
+-- | Runtime settings to configure this application. These settings can be
+-- loaded from various sources: defaults, environment variables, config files,
+-- theoretically even a database.
+data AppSettings = AppSettings
+    { appStaticDir              :: String
+    -- ^ Directory from which to serve static files.
+    , appDatabaseConf           :: SqliteConf
+    -- ^ Configuration settings for accessing the database.
+    , appRoot                   :: Text
+    -- ^ Base for all generated URLs.
+    , appHost                   :: HostPreference
+    -- ^ Host/interface the server should bind to.
+    , appPort                   :: Int
+    -- ^ Port to listen on
+    , appIpFromHeader           :: Bool
+    -- ^ Get the IP address from the header when logging. Useful when sitting
+    -- behind a reverse proxy.
+
+    , appDetailedRequestLogging :: Bool
+    -- ^ Use detailed request logging system
+    , appShouldLogAll           :: Bool
+    -- ^ Should all log messages be displayed?
+    , appReloadTemplates        :: Bool
+    -- ^ Use the reload version of templates
+    , appMutableStatic          :: Bool
+    -- ^ Assume that files in the static dir may change after compilation
+    , appSkipCombining          :: Bool
+    -- ^ Perform no stylesheet/script combining
+
+    , appApiRoot                :: String
+    , appApiKey                 :: ByteString
+    }
+
+instance FromJSON AppSettings where
+    parseJSON = withObject "AppSettings" $ \o -> do
+        let defaultDev =
+#if DEVELOPMENT
+                True
+#else
+                False
+#endif
+        appStaticDir              <- o .: "static-dir"
+        appDatabaseConf           <- o .: "database"
+        appRoot                   <- o .: "approot"
+        appHost                   <- fromString <$> o .: "host"
+        appPort                   <- o .: "port"
+        appIpFromHeader           <- o .: "ip-from-header"
+
+        appDetailedRequestLogging <- o .:? "detailed-logging" .!= defaultDev
+        appShouldLogAll           <- o .:? "should-log-all"   .!= defaultDev
+        appReloadTemplates        <- o .:? "reload-templates" .!= defaultDev
+        appMutableStatic          <- o .:? "mutable-static"   .!= defaultDev
+        appSkipCombining          <- o .:? "skip-combining"   .!= defaultDev
+
+        appApiRoot                <- o .: "apiroot"
+        appApiKey                 <- fromString <$> o .: "apikey"
+
+        return AppSettings {..}
+
+-- | Settings for 'widgetFile', such as which template languages to support and
+-- default Hamlet settings.
+--
+-- For more information on modifying behavior, see:
+--
+-- https://github.com/yesodweb/yesod/wiki/Overriding-widgetFile
+widgetFileSettings :: WidgetFileSettings
+widgetFileSettings = def
+
+-- | How static files should be combined.
+combineSettings :: CombineSettings
+combineSettings = def
+
+-- The rest of this file contains settings which rarely need changing by a
+-- user.
+
+widgetFile :: String -> Q Exp
+widgetFile = (if appReloadTemplates compileTimeAppSettings
+                then widgetFileReload
+                else widgetFileNoReload)
+              widgetFileSettings
+
+-- | Raw bytes at compile time of @config/settings.yml@
+configSettingsYmlBS :: ByteString
+configSettingsYmlBS = $(embedFile configSettingsYml)
+
+-- | @config/settings.yml@, parsed to a @Value@.
+configSettingsYmlValue :: Value
+configSettingsYmlValue = either throw id $ decodeEither' configSettingsYmlBS
+
+-- | A version of @AppSettings@ parsed at compile time from @config/settings.yml@.
+compileTimeAppSettings :: AppSettings
+compileTimeAppSettings =
+    case fromJSON $ applyEnvValue False mempty configSettingsYmlValue of
+        Error e -> error e
+        Success settings -> settings
+
+-- The following two functions can be used to combine multiple CSS or JS files
+-- at compile time to decrease the number of http requests.
+-- Sample usage (inside a Widget):
+--
+-- > $(combineStylesheets 'StaticR [style1_css, style2_css])
+
+combineStylesheets :: Name -> [Route Static] -> Q Exp
+combineStylesheets = combineStylesheets'
+    (appSkipCombining compileTimeAppSettings)
+    combineSettings
+
+combineScripts :: Name -> [Route Static] -> Q Exp
+combineScripts = combineScripts'
+    (appSkipCombining compileTimeAppSettings)
+    combineSettings
+{-
+
+-- import Prelude
+-- 
+-- import Control.Applicative
+-- import Text.Shakespeare.Text (st)
+-- import Language.Haskell.TH.Syntax
+-- import Database.Persist.Sqlite (SqliteConf)
+-- import Yesod.Default.Config
+-- import Yesod.Default.Util
+-- import Data.ByteString (ByteString)
+-- import Data.Text (Text)
+-- import Data.Text.Encoding (encodeUtf8)
+-- import Data.Yaml
+-- import Settings.Development
+-- import Data.Default (def)
+-- import Text.Hamlet
+
+
 
 import API (HasAPIConfig (..))
 
@@ -69,4 +197,4 @@ instance HasAPIConfig Extra where
 parseExtra :: DefaultEnv -> Object -> Parser Extra
 parseExtra _ o = Extra
     <$>                 o .: "apiroot"
-    <*> (encodeUtf8 <$> o .: "apikey")
+    <*> (encodeUtf8 <$> o .: "apikey")-}

@@ -43,8 +43,8 @@ postImage path tags = do
     options <- getOptions
     url     <- getResourceUrl "/images"
 
-    resp <- liftIO $ postWith options url [ partFileSource "image" path
-                                          , partLBS "tags"  (encode tags) ]
+    resp <- liftIO $ postWith options url [ partFileSource "images" path
+                                          , partLBS "tags" (encode tags) ]
 
     return $ case resp ^? responseBody . key "id" of
         Just (String code) -> Just $ APIImageCode code
@@ -55,8 +55,8 @@ postImage path tags = do
 getResourceUrl :: (MonadReader env m, HasAPIConfig env) => String -> m String
 getResourceUrl rsrc = ((++ rsrc) . getApiRoot) `liftM` ask
 
--- | Creates an 'Options' object from the monad HTTP 'Manager' which can be used
--- to query the API.
+-- | Creates an 'Options' object from the monad's HTTP 'Manager' which can be
+-- used to query the API.
 getOptions :: ( MonadReader env m, HasHttpManager env, HasAPIConfig env
               , MonadIO m)
            => m Options
