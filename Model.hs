@@ -8,32 +8,25 @@ import Data.Text (Text)
 import API (APIImageCode)
 
 share [mkPersist sqlSettings, mkMigrate "migrateFlickr"] [persistLowerCase|
-FlickrImage
-    photoId                     Text
+FlickrPicture
+    flickrId                    Text
+    apiId                       Text
     title                       Text
+    owner                       FlickrOwnerId
     url                         Text
-    width                       Int
-    height                      Int
+    tags                        [Text]
 
-    UniqueFlickrImagePhotoId    photoId
+    UniqueFlickrImageFlickrId   flickrId
+    UniqueFlickrImageApiId      apiId
+
     deriving Show
 
-FlickrTag
-    name                        Text
+FlickrOwner
+    flickrId                    Text
+    name                        Text Maybe
+    username                    Text Maybe
 
-    UniqueFlickrTagName         name
+    UniqueFlickrOwnerFlickrId   flickrId
+
     deriving Show
-
-FlickrImageTag
-    image                       FlickrImageId
-    tag                         FlickrTagId
-
-    UniqueFlickrImageTag        image tag
-    deriving Show
-
-ApiImage
-    apiId                       APIImageCode
-    flickr                      FlickrImageId
-
-    UniqueAPIImageAPIId         apiId
 |]

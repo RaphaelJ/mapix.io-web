@@ -2,12 +2,15 @@
 
 module API (
       APIImageCode (..), Tag, HasAPIConfig (..)
-    , postImage
+    -- * API Calls
+    , postObjects
+    -- * Utils
     , getResourceUrl, getOptions, withMashapeKey
     ) where
 
 import Prelude
 
+import Control.Applicative
 import Control.Lens
 import Control.Monad
 import Control.Monad.Reader.Class (MonadReader, ask)
@@ -15,13 +18,15 @@ import Control.Monad.IO.Class (MonadIO, liftIO)
 import Data.Aeson (Value (String), encode)
 import Data.Aeson.Lens (key)
 import Data.ByteString (ByteString)
+import Data.Maybe (maybeToList)
 import Data.Text (Text)
 import Database.Persist (PersistField)
 import Database.Persist.Sql (PersistFieldSql (..))
 import Network.HTTP.Client.Conduit (HasHttpManager (getHttpManager))
 import Network.Wreq (
       Options
-    , defaults, header, manager, partLBS, partFileSource, postWith, responseBody
+    , defaults, header, manager, partLBS, partFileSource, partText, partString
+    , postWith, responseBody
     )
 
 newtype APIImageCode = APIImageCode { aicValue :: Text }
@@ -36,18 +41,23 @@ class HasAPIConfig a where
     getApiRoot :: a -> String
     getApiKey  :: a -> ByteString
 
-postImage :: ( MonadReader env m, HasHttpManager env, HasAPIConfig env
-             , MonadIO m)
-          => FilePath -> [Tag] -> m (Maybe APIImageCode)
-postImage path tags = do
+postObjects :: ( MonadReader env m, HasHttpManager env, HasAPIConfig env
+               , MonadIO m)
+            => Maybe Text -> FilePath -> [Tag] -> Bool -> m (Maybe Text)
+postObjects mName path tags ignoreBack = do
     options <- getOptions
-    url     <- getResourceUrl "/images"
+    url     <- getResourceUrl "/objects"
 
-    resp <- liftIO $ postWith options url [ partFileSource "images" path
-                                          , partLBS "tags" (encode tags) ]
+    let ignoreBackStr = if ignoreBack then "1" else "0"
+        postArgs      = maybeToList (partText "name" <$> mName) ++
+                        [ partFileSource "images"            path
+                        , partLBS        "tags"              (encode tags)
+                        , partString     "ignore_background" ignoreBackStr ]
+
+    resp <- liftIO $ postWith options url postArgs
 
     return $ case resp ^? responseBody . key "id" of
-        Just (String code) -> Just $ APIImageCode code
+        Just (String code) -> Just code
         _                  -> Nothing
 
 -- -----------------------------------------------------------------------------
