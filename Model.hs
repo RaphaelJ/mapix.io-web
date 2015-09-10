@@ -10,7 +10,7 @@ import API (APIImageCode)
 share [mkPersist sqlSettings, mkMigrate "migrateFlickr"] [persistLowerCase|
 FlickrPicture
     flickrId                    Text
-    apiId                       Text
+    apiId                       APIImageCode
     title                       Text
     owner                       FlickrOwnerId
     url                         Text

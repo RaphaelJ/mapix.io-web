@@ -8,18 +8,11 @@ module API (
     , getResourceUrl, getOptions, withMashapeKey
     ) where
 
-import Prelude
+import ClassyPrelude
 
-import Control.Applicative
 import Control.Lens
-import Control.Monad
-import Control.Monad.Reader.Class (MonadReader, ask)
-import Control.Monad.IO.Class (MonadIO, liftIO)
 import Data.Aeson (Value (String), encode)
 import Data.Aeson.Lens (key)
-import Data.ByteString (ByteString)
-import Data.Maybe (maybeToList)
-import Data.Text (Text)
 import Database.Persist (PersistField)
 import Database.Persist.Sql (PersistFieldSql (..))
 import Network.HTTP.Client.Conduit (HasHttpManager (getHttpManager))
@@ -30,7 +23,7 @@ import Network.Wreq (
     )
 
 newtype APIImageCode = APIImageCode { aicValue :: Text }
-    deriving (Eq, Ord, Read, PersistField)
+    deriving (Eq, Ord, Read, Show, PersistField)
 
 instance PersistFieldSql APIImageCode where
     sqlType action = sqlType (aicValue `liftM` action)
@@ -43,7 +36,7 @@ class HasAPIConfig a where
 
 postObjects :: ( MonadReader env m, HasHttpManager env, HasAPIConfig env
                , MonadIO m)
-            => Maybe Text -> FilePath -> [Tag] -> Bool -> m (Maybe Text)
+            => Maybe Text -> FilePath -> [Tag] -> Bool -> m (Maybe APIImageCode)
 postObjects mName path tags ignoreBack = do
     options <- getOptions
     url     <- getResourceUrl "/objects"
@@ -57,7 +50,7 @@ postObjects mName path tags ignoreBack = do
     resp <- liftIO $ postWith options url postArgs
 
     return $ case resp ^? responseBody . key "id" of
-        Just (String code) -> Just code
+        Just (String code) -> Just $ APIImageCode code
         _                  -> Nothing
 
 -- -----------------------------------------------------------------------------
