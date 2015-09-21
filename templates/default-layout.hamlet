@@ -1,5 +1,5 @@
-<nav .navbar .navbar-fixed-top role="navigation">
-    <div .container>
+<nav .navbar .navbar-default role="navigation">
+    <div .container-fluid>
         <div .navbar-header>
             <button type="button" .navbar-toggle data-toggle="collapse"
                     data-target="#navbar-collapse">
@@ -13,11 +13,11 @@
         <div .collapse .navbar-collapse .navbar-right #navbar-collapse>
             <ul .nav .navbar-nav>
                 <li .active>
-                    <a href="#">Discover
+                    <a href="#">Home
                 <li>
-                    <a href="#">Try
+                    <a href="#">Demo
                 <li>
-                    <a href="#">Use
+                    <a href="#">Docs
 
 $maybe msg <- mmsg
     <div #message>#{msg}

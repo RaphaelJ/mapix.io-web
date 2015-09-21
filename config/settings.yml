@@ -22,4 +22,4 @@ database:
   poolsize:     "_env:SQLITE_POOLSIZE:10"
 
 apiroot:        "https://raphaelj-mapix-io-v1.p.mashape.com"
-apikey:         "QrCgWquGRFmsh90zdSRVD0NOhGnxp1VNgPTjsni7FCBTWULXFY"
+apikey:         "_env:API_KEY:"
