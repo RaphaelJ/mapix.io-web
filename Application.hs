@@ -28,6 +28,7 @@ import Network.Wai.Middleware.RequestLogger (Destination (Logger),
 import System.Log.FastLogger                (defaultBufSize, newStdoutLoggerSet,
                                              toLogStr)
 
+import Handler.Demo
 import Handler.Home
 
 -- This line actually creates our YesodDispatch instance. It is the second half

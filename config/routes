@@ -2,3 +2,6 @@
 
 /                               HomeR                   GET
 
+/demo                           DemoR                   GET
+/demo/search-by-colors          SearchByColorsR         POST
+

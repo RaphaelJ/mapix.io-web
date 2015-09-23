@@ -1,10 +1,9 @@
 <div .header>
     <div .container>
         <div .col-md-8 .col-md-offset-4>
-            <h1>Reverse image search for your applications
+            <h1>Index and search object by their colors
             <h3>
-                Use our API to index and search for similar images in a
-                collection of up to a million images in fractions of seconds.
+                Our API extract and index 
 
     <ul #colors-bar>
 

@@ -1,25 +1,28 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module API (
-      APIImageCode (..), Tag, HasAPIConfig (..)
+      APIImageCode (..), Tag, Weight, Color (..), HasAPIConfig (..)
     -- * API Calls
-    , postObjects
+    , postObjects, searchByColors
     -- * Utils
     , getResourceUrl, getOptions, withMashapeKey
     ) where
 
 import ClassyPrelude
 
-import Control.Lens
-import Data.Aeson (Value (String), encode)
+import Control.Lens hiding ((.=))
+import Data.Aeson (
+      FromJSON (..), ToJSON (..), Value (Object, String)
+    , (.=), (.:), encode, object
+    )
 import Data.Aeson.Lens (key)
 import Database.Persist (PersistField)
 import Database.Persist.Sql (PersistFieldSql (..))
 import Network.HTTP.Client.Conduit (HasHttpManager (getHttpManager))
 import Network.Wreq (
       Options
-    , defaults, header, manager, partLBS, partFileSource, partText, partString
-    , postWith, responseBody
+    , asValue, defaults, header, manager, partLBS, partFileSource, partText
+    , partString, postWith, responseBody
     )
 
 newtype APIImageCode = APIImageCode { aicValue :: Text }
@@ -29,6 +32,24 @@ instance PersistFieldSql APIImageCode where
     sqlType action = sqlType (aicValue `liftM` action)
 
 type Tag = Text
+
+type Weight = Double
+
+-- | The color with its weight.
+data Color = Color {
+      cColor  :: (Word8, Word8, Word8) -- RGB
+    , cWeight :: !Weight
+    } deriving Show
+
+instance ToJSON Color where
+    toJSON (Color (r, g, b) w) =
+        object [ "rgb"    .= [r, g, b]
+               , "weight" .= w ]
+
+instance FromJSON Color where
+    parseJSON (Object o) = Color <$> o .: "rgb"
+                                 <*> o .: "weight"
+    parseJSON _          = mzero
 
 class HasAPIConfig a where
     getApiRoot :: a -> String
@@ -53,8 +74,22 @@ postObjects mName path tags ignoreBack = do
         Just (String code) -> Just $ APIImageCode code
         _                  -> Nothing
 
+searchByColors :: ( MonadReader env m, HasHttpManager env, HasAPIConfig env
+                  , MonadIO m)
+               => [Color] -> m Value
+searchByColors colors = do
+    options <- getOptions
+    url     <- getResourceUrl "/search-by-colors"
+
+    let postArgs = [ partLBS "colors" (encode colors) ]
+
+    resp <- liftIO $ postWith options url postArgs >>= asValue
+
+    return $! resp ^. responseBody
+
 -- -----------------------------------------------------------------------------
 
+-- | Prepends the API root to the given resource URI.
 getResourceUrl :: (MonadReader env m, HasAPIConfig env) => String -> m String
 getResourceUrl rsrc = ((++ rsrc) . getApiRoot) `liftM` ask
 
