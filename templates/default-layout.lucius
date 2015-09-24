@@ -1,6 +1,6 @@
 body {
-    padding-top: 50px;
     color: rgb(9, 28, 36);
+    padding-top: 70px;
 }
 
 body, h1, h2, h3, h4, .navbar {
@@ -8,7 +8,7 @@ body, h1, h2, h3, h4, .navbar {
 }
 
 .navbar {
-    /*background-color: #AA2163;
+    background-color: #AA2163;
 
     a {
         color: white;
@@ -25,5 +25,5 @@ body, h1, h2, h3, h4, .navbar {
 
     .nav li.active, .nav li:hover, .nav li a:hover {
         background-color: #89215B;
-    }*/
+    }
 }

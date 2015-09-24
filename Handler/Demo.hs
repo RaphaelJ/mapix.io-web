@@ -10,10 +10,11 @@ import API (searchByColors)
 
 getDemoR :: Handler Html
 getDemoR = do
-    undefined
+    defaultLayout $ do
+        setTitle "mapix.io - Search Flickr images by color"
+        $(widgetFile "demo")
 
 -- Search by colors ------------------------------------------------------------
-
 
 postSearchByColorsR :: Handler Value
 postSearchByColorsR = do

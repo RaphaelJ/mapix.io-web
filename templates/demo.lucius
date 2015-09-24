@@ -1,0 +1,9 @@
+table.color-selector {
+    width: 100%;
+    height: 150px;
+
+    td {
+        width: 2.5%;
+        height: 2.5%;
+    }
+}

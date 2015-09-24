@@ -46,14 +46,12 @@ instance Yesod App where
             $(combineStylesheets 'StaticR
                 [ css_normalize_css
                 , css_bootstrap_css
-                , css_flat_ui_css
                 ])
 
             $(combineScripts 'StaticR
-                [ js_html5shiv_js
-                , js_jquery_min_js
+                [ js_jquery_min_js
                 , js_bootstrap_min_js
-                , js_respond_min_js
+                , js_angular_min_js
                 ])
 
             $(widgetFile "default-layout")

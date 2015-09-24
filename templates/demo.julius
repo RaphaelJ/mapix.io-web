@@ -1,0 +1,29 @@
+(function () {
+    var app = angular.module("mapixDemo", []);
+
+    app.controller("DemoController", function () {
+        //
+        // Demo modes (by colors, or by image).
+        //
+
+        this.MODES = { BY_COLORS: 0, BY_IMAGE: 1 };
+
+        this.mode = this.MODES.BY_COLORS;
+
+        this.images = [];
+    });
+
+    app.controller("ColorSelectorController", function() {
+        this.N_HUES = 40;
+        this.N_LUMS = 40;
+        this.SAT    = 70;
+
+        this.HUES = [];
+        for (var i = 0; i < this.N_HUES; i++)
+            this.HUES.push((i * 360 / this.N_HUES + 15) % 360);
+
+        this.LUMS = [];
+        for (var i = 0; i < this.N_LUMS; i++)
+            this.LUMS.push((this.N_LUMS - i) * 90 / this.N_LUMS);
+    });
+})();
