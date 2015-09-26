@@ -34,7 +34,8 @@ instance Yesod App where
     approot = ApprootMaster $ appRoot . appSettings
 
     defaultLayout widget = do
-        mmsg <- getMessage
+        mmsg   <- getMessage
+        mRoute <- getCurrentRoute
 
         -- We break up the default layout into two components:
         -- default-layout is the contents of the body tag, and

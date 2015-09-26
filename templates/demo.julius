@@ -59,15 +59,35 @@
             var g = 255 * hueToRGB(m1, m2, hue);
             var b = 255 * hueToRGB(m1, m2, hue - 1 / 3);
 
-            return [ r, g, b ];
+            return {
+                red: Math.round(r), green: Math.round(g), blue: Math.round(b)
+            };
         };
 
         this.addColor = function (hue, sat, light) {
-            this.colors.push(HSLToRGB(hue, sat, light));
+            var rgb = HSLToRGB(hue, sat, light);
+
+            // Reduces the weights of the previously inserted colors.
+            var factor = this.colors.length / (this.colors.length + 1);
+            for (var i in this.colors)
+                this.colors[i].weight *= factor;
+
+            this.colors.push({
+                rgb: rgb,
+                html: "rgb(" + rgb.red + "," + rgb.green + "," + rgb.blue + ")",
+                weight: 1 / (this.colors.length + 1)
+            });
         };
 
         this.removeColor = function (index) {
+            var weight = this.colors[index].weight;
+
             this.colors.splice(index, 1);
+
+            // Adds the weight of the removed color to each remaining colors.
+            var toAdd = weight / this.colors.length;
+            for (var i in this.colors)
+                this.colors[i].weight += toAdd;
         };
     });
 

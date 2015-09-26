@@ -12,10 +12,22 @@
 
         <div .collapse .navbar-collapse .navbar-right #navbar-collapse>
             <ul .nav .navbar-nav>
-                <li .active>
-                    <a href="#">Home
-                <li>
-                    <a href="#">Demo
+                $case mRoute
+                    $of Just HomeR
+                        <li .active>
+                            <a href="@{HomeR}">Home
+                    $of _
+                        <li>
+                            <a href="@{HomeR}">Home
+
+                $case mRoute
+                    $of Just DemoR
+                        <li .active>
+                            <a href="@{DemoR}">Demo
+                    $of _
+                        <li>
+                            <a href="@{DemoR}">Demo
+
                 <li>
                     <a href="#">Docs
 

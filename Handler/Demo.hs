@@ -12,6 +12,10 @@ getDemoR :: Handler Html
 getDemoR = do
     defaultLayout $ do
         setTitle "mapix.io - Search Flickr images by color"
+
+        addStylesheet $! StaticR css_slider_css
+        addScript     $! StaticR js_bootstrap_slider_js
+
         $(widgetFile "demo")
 
 -- Search by colors ------------------------------------------------------------

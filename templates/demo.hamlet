@@ -35,16 +35,22 @@
                     <div ng-repeat="color in byColors.colors" .form-group>
                         <div .input-group>
                             <span .input-group-addon
-                                  ng-style="{ 'background-color': 'rgb(' + color[0] + ',' + color[1] + ',' + color[2] + ')' }">
+                                  style="background-color: {{ color.html }}">
 
-                            <input type=text .form-control ng-value="color[0]">
+                            <input type=text ng-model="color.weight"
+                                   .form-control
+                                   data-slider-min="-20" data-slider-max="20"
+                                   data-slider-step="1" data-slider-value="-14"
+                                   data-slider-orientation="horizontal"
+                                   data-slider-selection="after"
+                                   data-slider-tooltip="hide"
+                                   id="color_slider_\{{ index }}"
+                                   ng-init="\$("#color_slider_\{{ index }}").slider()">
 
                             <span .input-group-btn>
                                 <button .btn .btn-danger type=button
                                         ng-click="byColors.removeColor($index)">
                                     <span .glyphicon .glyphicon-remove>
-
-                    <button .form-control .btn .btn-primary>Search !
 
             <div ng-show="demo.mode === demo.MODES.BY_IMAGE">
                 <h3>Search by image
