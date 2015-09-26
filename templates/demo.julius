@@ -13,7 +13,7 @@
         this.images = [];
     });
 
-    app.controller("ColorSelectorController", function() {
+    app.controller("ColorSelectorController", function () {
         this.N_HUES = 40;
         this.N_LUMS = 40;
         this.SAT    = 70;
@@ -25,5 +25,10 @@
         this.LUMS = [];
         for (var i = 0; i < this.N_LUMS; i++)
             this.LUMS.push((this.N_LUMS - i) * 90 / this.N_LUMS);
+    });
+
+    app.controller("SearchByColorController", function () {
+        this.addColor = function (hue, lum) {
+        };
     });
 })();

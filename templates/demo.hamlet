@@ -1,11 +1,7 @@
 <div .container-fluid ng-app="mapixDemo" ng-controller="DemoController as demo">
     <div .row>
-        <p .col-xs-12>
-            This interactive application allows you to search Flickr images by
-            colors.
+        <div .col-xs-12 .col-sm-5 .col-md-3 .col-lg-2>
 
-    <div .row>
-        <div .col-xs-12>
             <ul .nav .nav-tabs>
                 <li ng-class="{ active: demo.mode === demo.MODES.BY_COLORS }"
                     ng-click="demo.mode = demo.MODES.BY_COLORS">
@@ -14,24 +10,30 @@
                     ng-click="demo.mode = demo.MODES.BY_IMAGE">
                     <a href="#">Search by image
 
-            <div .row ng-show="demo.mode === demo.MODES.BY_COLORS">
-                <div .col-sm-4 .col-md-3 .col-lg-2>
-                    <h4>Add a color
+            <div ng-show="demo.mode === demo.MODES.BY_COLORS"
+                 ng-controller="SearchByColorController as byColor">
+                <p>
+                    This interactive application allows you to search Flickr
+                    images by colors. Select a few colors and adjust their
+                    proportions.
 
-                    <div .text-center .thumbnail>
-                        <table .color-selector
-                            ng-controller="ColorSelectorController as selector">
-                            <tr ng-repeat="lum in selector.LUMS">
-                                <td ng-repeat="hue in selector.HUES"
-                                    ng-style="{ 'background-color': 'hsl(' + hue + ',' + selector.SAT + '%,' + lum + '%)' }">
+                <h4>Add a color
 
-                <div .col-sm-8 .col-md-9 .col-lg-10>
+                <div .text-center .thumbnail>
+                    <table .color-selector
+                           ng-controller="ColorSelectorController as selector">
+                        <tr ng-repeat="lum in selector.LUMS">
+                            <td ng-repeat="hue in selector.HUES"
+                                ng-click="byColor.addColor(hue, lum)"
+                                ng-style="{ 'background-color': 'hsl(' + hue + ',' + selector.SAT + '%,' + lum + '%)' }">
+
+                <div>
                     <h4>Adjust colors
 
                     <div ng-repeat="color for demo.colors">
 
                     <button .form-control .btn .btn-primary>Search !
 
-    <div .row>
-        <div .col-xs-12>
+        <div .col-xs-12 .col-sm-7 .col-md-9 .col-lg-10
+             style="background-color: black">
             <img ng-repeat="image in demo.images" ng-src="image.url">
