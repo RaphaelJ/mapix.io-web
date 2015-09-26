@@ -12,6 +12,8 @@
 
             <div ng-show="demo.mode === demo.MODES.BY_COLORS"
                  ng-controller="SearchByColorsController as byColors">
+                <h3>Search by colors
+
                 <p>
                     This interactive application allows you to search Flickr
                     images by colors. Select a few colors and adjust their
@@ -30,10 +32,27 @@
                 <div>
                     <h4>Adjust colors
 
-                    <div ng-repeat="color in byColors.colors">
-                        {{ color }}
+                    <div ng-repeat="color in byColors.colors" .form-group>
+                        <div .input-group>
+                            <span .input-group-addon
+                                  ng-style="{ 'background-color': 'rgb(' + color[0] + ',' + color[1] + ',' + color[2] + ')' }">
+
+                            <input type=text .form-control ng-value="color[0]">
+
+                            <span .input-group-btn>
+                                <button .btn .btn-danger type=button
+                                        ng-click="byColors.removeColor($index)">
+                                    <span .glyphicon .glyphicon-remove>
 
                     <button .form-control .btn .btn-primary>Search !
+
+            <div ng-show="demo.mode === demo.MODES.BY_IMAGE">
+                <h3>Search by image
+
+                <p>
+                    This interactive application allows you to search Flickr
+                    images having similar colors to another image.
+
 
         <div .col-xs-12 .col-sm-7 .col-md-9 .col-lg-9
              style="background-color: black">

@@ -13,6 +13,10 @@
         this.images = [];
     });
 
+    //
+    // Search by colors
+    //
+
     app.controller("SearchByColorsController", function () {
         this.colors = [];
 
@@ -51,9 +55,9 @@
                     return m1;
             };
 
-            var r = hueToRGB(m1, m2, hue + 1 / 3);
-            var g = hueToRGB(m1, m2, hue);
-            var b = hueToRGB(m1, m2, hue - 1 / 3);
+            var r = 255 * hueToRGB(m1, m2, hue + 1 / 3);
+            var g = 255 * hueToRGB(m1, m2, hue);
+            var b = 255 * hueToRGB(m1, m2, hue - 1 / 3);
 
             return [ r, g, b ];
         };
@@ -61,8 +65,13 @@
         this.addColor = function (hue, sat, light) {
             this.colors.push(HSLToRGB(hue, sat, light));
         };
+
+        this.removeColor = function (index) {
+            this.colors.splice(index, 1);
+        };
     });
 
+    // Controls the color picker.
     app.controller("ColorSelectorController", function () {
         this.N_HUES     = 36;
         this.N_LIGHTS   = 36;
