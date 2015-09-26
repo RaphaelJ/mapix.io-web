@@ -32,6 +32,10 @@
                 <div>
                     <h4>Adjust colors
 
+                    <p .alert .alert-warning
+                       ng-show="byColors.colors.length === 0">
+                        Select at least one color.
+
                     <div ng-repeat="color in byColors.colors" .form-group>
                         <div .input-group>
                             <span .input-group-addon
