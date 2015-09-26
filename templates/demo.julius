@@ -13,22 +13,67 @@
         this.images = [];
     });
 
+    app.controller("SearchByColorsController", function () {
+        this.colors = [];
+
+        function HSLToRGB(hue, sat, light)
+        {
+            // Uses the formula from:
+            // <http://www.w3.org/TR/2011/REC-css3-color-20110607/#hsl-color>
+
+            // Normalizes value to fractions 0..1.
+            hue   /= 360;
+            sat   /= 100;
+            light /= 100;
+
+            var m2;
+            if (light <= 0.5)
+                m2 = light * (sat + 1);
+            else
+                m2 = light + sat - light * sat;
+
+            var m1 = light * 2 - m2;
+
+            function hueToRGB(m1, m2, hue)
+            {
+                if (hue < 0)
+                    hue += 1;
+                else if (hue > 1)
+                    hue -= 1;
+
+                if (hue * 6 < 1)
+                    return m1 + (m2 - m2) * hue * 6;
+                else if (hue * 2 < 1)
+                    return m2;
+                else if (hue * 3 < 2)
+                    return m1 + (m2 - m1) * (2 / 3 - hue) * 6;
+                else
+                    return m1;
+            };
+
+            var r = hueToRGB(m1, m2, hue + 1 / 3);
+            var g = hueToRGB(m1, m2, hue);
+            var b = hueToRGB(m1, m2, hue - 1 / 3);
+
+            return [ r, g, b ];
+        };
+
+        this.addColor = function (hue, sat, light) {
+            this.colors.push(HSLToRGB(hue, sat, light));
+        };
+    });
+
     app.controller("ColorSelectorController", function () {
-        this.N_HUES = 40;
-        this.N_LUMS = 40;
-        this.SAT    = 70;
+        this.N_HUES     = 36;
+        this.N_LIGHTS   = 36;
+        this.SAT        = 70;
 
         this.HUES = [];
         for (var i = 0; i < this.N_HUES; i++)
             this.HUES.push((i * 360 / this.N_HUES + 15) % 360);
 
-        this.LUMS = [];
-        for (var i = 0; i < this.N_LUMS; i++)
-            this.LUMS.push((this.N_LUMS - i) * 90 / this.N_LUMS);
-    });
-
-    app.controller("SearchByColorController", function () {
-        this.addColor = function (hue, lum) {
-        };
+        this.LIGHTS = [];
+        for (var i = 0; i < this.N_LIGHTS; i++)
+            this.LIGHTS.push((this.N_LIGHTS - i) * 90 / this.N_LIGHTS);
     });
 })();

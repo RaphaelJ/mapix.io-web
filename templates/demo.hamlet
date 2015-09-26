@@ -1,6 +1,6 @@
 <div .container-fluid ng-app="mapixDemo" ng-controller="DemoController as demo">
     <div .row>
-        <div .col-xs-12 .col-sm-5 .col-md-3 .col-lg-2>
+        <div .col-xs-12 .col-sm-5 .col-md-3 .col-lg-3>
 
             <ul .nav .nav-tabs>
                 <li ng-class="{ active: demo.mode === demo.MODES.BY_COLORS }"
@@ -11,7 +11,7 @@
                     <a href="#">Search by image
 
             <div ng-show="demo.mode === demo.MODES.BY_COLORS"
-                 ng-controller="SearchByColorController as byColor">
+                 ng-controller="SearchByColorsController as byColors">
                 <p>
                     This interactive application allows you to search Flickr
                     images by colors. Select a few colors and adjust their
@@ -22,18 +22,19 @@
                 <div .text-center .thumbnail>
                     <table .color-selector
                            ng-controller="ColorSelectorController as selector">
-                        <tr ng-repeat="lum in selector.LUMS">
+                        <tr ng-repeat="light in selector.LIGHTS">
                             <td ng-repeat="hue in selector.HUES"
-                                ng-click="byColor.addColor(hue, lum)"
-                                ng-style="{ 'background-color': 'hsl(' + hue + ',' + selector.SAT + '%,' + lum + '%)' }">
+                                ng-click="byColors.addColor(hue, selector.SAT, light)"
+                                ng-style="{ 'background-color': 'hsl(' + hue + ',' + selector.SAT + '%,' + light+ '%)' }">
 
                 <div>
                     <h4>Adjust colors
 
-                    <div ng-repeat="color for demo.colors">
+                    <div ng-repeat="color in byColors.colors">
+                        {{ color }}
 
                     <button .form-control .btn .btn-primary>Search !
 
-        <div .col-xs-12 .col-sm-7 .col-md-9 .col-lg-10
+        <div .col-xs-12 .col-sm-7 .col-md-9 .col-lg-9
              style="background-color: black">
             <img ng-repeat="image in demo.images" ng-src="image.url">
