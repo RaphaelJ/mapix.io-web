@@ -16,9 +16,4 @@ $newline never
     ^{pageBody pc}
     <link href=//fonts.googleapis.com/css?family=Lato:100italic,100,300italic,300,400italic,400,700italic,700,900italic,900" rel="stylesheet" type="text/css">
 
-    $maybe route <- mRoute
-        $case route
-            $of DemoR
-                <meta name="viewport"
-                      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-            $of _
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">

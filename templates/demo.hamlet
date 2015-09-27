@@ -1,6 +1,6 @@
 <div .container-fluid ng-app="mapixDemo" ng-controller="DemoController as demo">
     <div .row>
-        <div .col-xs-12 .col-sm-5 .col-md-3 .col-lg-3>
+        <div #demo-settings .col-xs-12 .col-sm-4 .col-md-4 .col-lg-3>
 
             <ul .nav .nav-tabs>
                 <li ng-class="{ active: demo.mode === demo.MODES.BY_COLORS }"
@@ -12,12 +12,14 @@
 
             <div ng-show="demo.mode === demo.MODES.BY_COLORS"
                  ng-controller="SearchByColorsController as byColors">
-                <h3>Search by colors
+                <h3>
+                    Search
+                    <span .hidden-xs .hidden-sm>images
+                    by colors
 
                 <p>
-                    This interactive application allows you to search Flickr
-                    images by colors. Select a few colors and adjust their
-                    proportions.
+                    Search Flickr images by their colors.
+                    Select a few colors and adjust their proportions.
 
                 <h4>Add a color
 
@@ -32,38 +34,33 @@
                 <div>
                     <h4>Adjust colors
 
-                    <p .alert .alert-warning
+                    <p .alert .alert-info
                        ng-show="byColors.colors.length === 0">
                         Select at least one color.
 
-                    <div ng-repeat="color in byColors.colors" .form-group>
-                        <div .input-group>
-                            <span .input-group-addon
-                                  style="background-color: {{ color.html }}">
+                    <div .row ng-repeat="color in byColors.colors">
+                        <div .col-xs-3>
+                            <input type=color .form-control
+                                   value="{{ color.html }}">
 
-                            <input type=text ng-model="color.weight"
-                                   .form-control
-                                   data-slider-min="-20" data-slider-max="20"
-                                   data-slider-step="1" data-slider-value="-14"
-                                   data-slider-orientation="horizontal"
-                                   data-slider-selection="after"
-                                   data-slider-tooltip="hide"
-                                   id="color_slider_\{{ index }}"
-                                   ng-init="\$("#color_slider_\{{ index }}").slider()">
+                        <div .col-xs-7 .color-slider>
+                            <input type=text bootstrap-slider
+                                   ng-model="color.weight"
+                                   value="{{ color.weight }}"
+                                   data-slider-min=0 data-slider-max=100
+                                   data-slider-tooltip=hide>
 
-                            <span .input-group-btn>
-                                <button .btn .btn-danger type=button
-                                        ng-click="byColors.removeColor($index)">
-                                    <span .glyphicon .glyphicon-remove>
+                        <div .col-xs-2>
+                            <button .close type=button
+                                    ng-click="byColors.removeColor($index)">
+                                &times;
 
             <div ng-show="demo.mode === demo.MODES.BY_IMAGE">
                 <h3>Search by image
 
                 <p>
-                    This interactive application allows you to search Flickr
-                    images having similar colors to another image.
+                    Search Flickr images having similar colors to another image.
 
 
-        <div .col-xs-12 .col-sm-7 .col-md-9 .col-lg-9
-             style="background-color: black">
+        <div #demo-gallery .col-xs-12 .col-sm-8 .col-md-8 .col-lg-9>
             <img ng-repeat="image in demo.images" ng-src="image.url">
